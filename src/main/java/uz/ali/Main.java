@@ -7,13 +7,13 @@ public class Main {
 
         // database uxladi hamma data lar ochib ketti
 //        Profile profile = authorizationWrittenWithStatement("ali';delete from profile;--", "alishman");
-        Profile profile = authorizationWrittenWithStatement("alish", "alishman");
-        System.out.println(profile);
+//        Profile profile = authorizationWrittenWithStatement("alish", "alishman");
+//        System.out.println(profile);
 
         // Boyagi xakkerskiy query bi yozsak ham ta'sir qila olmaydi
 //        Profile profile = authorizationWrittenWithPreparedtatement("ali';delete from profile;--", "alishman");
-  /*      Profile profile = authorizationWrittenWithPreparedtatement("alish", "alishman");
-        System.out.println(profile);*/
+        Profile profile = authorizationWrittenWithPreparedtatement("alish", "alishman");
+        System.out.println(profile);
 
     }
 
@@ -41,7 +41,30 @@ public class Main {
         }
     }
 
+    // PreparedStatement Bilan yozilgan query va method ancha havsiz va bunda sql injection ni oldina olinadi.
+    public static Profile authorizationWrittenWithPreparedtatement(String login, String password) {
+        try (Connection connection = DatabaseUtil.getConnection()) {
+            String selectQuery = "select * from profile where login = ? and password = ?";
+            PreparedStatement preparedStatement = connection.prepareStatement(selectQuery);
 
+            preparedStatement.setString(1, login);
+            preparedStatement.setString(2, password);
+
+            Profile profile = null;
+            System.out.println(selectQuery);
+            ResultSet resultSet = preparedStatement.executeQuery();
+
+            if (resultSet.next()) {
+                profile = new Profile(resultSet.getString("name"),
+                        resultSet.getString("surname"),
+                        resultSet.getString("login"),
+                        resultSet.getString("password"));
+            }
+            return profile;
+        } catch (SQLException e) {
+            throw new RuntimeException(e);
+        }
+    }
 
 
 }
